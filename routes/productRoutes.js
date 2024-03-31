@@ -67,4 +67,40 @@ router.get('/search', async (req, res) => {
 
 
 
+
+
+// Route to search for products based on query parameters and update with data from request body
+router.put('/search', async (req, res) => {
+  try {
+    const { name, size, color, material } = req.query;
+    const { newName, newSize, newColor, newMaterial } = req.body;
+
+    // Construct query object based on provided query parameters
+    const query = {};
+    if (name) query.name = name;
+    if (size) query.size = size;
+    if (color) query.color = color;
+    if (material) query.material = material;
+
+    // Find products that match the query
+    const filteredProducts = await Product.find(query);
+
+    // Update matched products with data from request body
+    for (const product of filteredProducts) {
+      if (newName) product.name = newName;
+      if (newSize) product.size = newSize;
+      if (newColor) product.color = newColor;
+      if (newMaterial) product.material = newMaterial;
+      await product.save();
+    }
+
+    // Retrieve updated products
+    const updatedProducts = await Product.find(query);
+
+    res.json(updatedProducts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
